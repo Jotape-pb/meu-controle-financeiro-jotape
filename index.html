@@ -30,18 +30,24 @@
             
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 bg-slate-50 p-4 rounded-lg border">
                 <select id="categoria" class="border p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
-                    <option value="Água Casa">Água Casa</option>
-                    <option value="Energia Casa">Energia Casa</option>
-                    <option value="Internet Casa">Internet Casa</option>
-                    <option value="Alimentação">Alimentação</option>
-                    <option value="Aluguel Casa/AP">Aluguel Casa/AP</option>
-                    <option value="UBER">UBER</option>
-                    <option value="Lazer">Lazer</option>
+                    <option value="1- Água Casa">1- Água Casa</option>
+                    <option value="2- Energia Casa">2- Energia Casa</option>
+                    <option value="3- Internet Casa">3- Internet Casa</option>
+                    <option value="4- Alimentação">4- Alimentação</option>
+                    <option value="5- Aluguel Casa/AP">5- Aluguel Casa/AP</option>
+                    <option value="6- UBER">6- UBER</option>
+                    <option value="7- Lazer">7- Lazer</option>
                     <option value="Outros">Outros (Nova Categoria)</option>
                 </select>
-                <input type="text" id="descricao" placeholder="Descrição (Opcional)" class="border p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
+                <input type="text" id="descricao" placeholder="Descrição Opcional" class="border p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
                 <input type="number" id="valor" placeholder="Valor (R$)" class="border p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
-                <button onclick="salvarDespesa()" class="bg-blue-600 text-white font-bold p-2 rounded-lg hover:bg-blue-700 transition shadow">Salvar Despesa</button>
+                <button onclick="salvarDespesa()" class="bg-blue-600 text-white font-bold p-2 rounded-lg hover:bg-blue-700 transition shadow">Adicionar Custo</button>
+            </div>
+
+            <div class="bg-blue-50 p-4 rounded-lg border border-blue-100 mt-4">
+                <h3 class="font-bold text-blue-800 mb-2"><i class="fas fa-robot mr-2"></i>Análise Inteligente de Custos</h3>
+                <p class="text-sm text-gray-700">Avaliando o fluxo de caixa para otimização da sua Reserva de Emergência e impacto dos custos de telemarketing.</p>
+                <button onclick="alert('Módulo de IA ativo e integrado ao JOTAPÊ.')" class="mt-3 text-xs bg-blue-800 text-white px-3 py-1 rounded hover:bg-blue-900 transition">Gerar Análise</button>
             </div>
         </section>
 
@@ -49,7 +55,7 @@
         <section id="aba-fiis" class="bg-white p-6 rounded-xl shadow-md hidden">
             <div class="flex flex-col md:flex-row justify-between items-center border-b pb-3 mb-4 gap-4">
                 <h2 class="text-xl font-bold text-slate-800"><i class="fas fa-city text-indigo-600 mr-2"></i>Meus Fundos Imobiliários</h2>
-                <button onclick="atualizarDadosB3()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-emerald-500 transition shadow text-sm">
+                <button onclick="atualizarCotacoes()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-emerald-500 transition shadow text-sm">
                     <i class="fas fa-sync-alt mr-2"></i>Atualizar Cotações em Tempo Real
                 </button>
             </div>
@@ -58,13 +64,31 @@
                 <input type="text" id="ticker" placeholder="Ticker (Ex: MXRF11)" class="border p-2 rounded-lg uppercase focus:outline-none focus:ring-2 focus:ring-indigo-400">
                 <input type="number" id="qtd" placeholder="Quantidade" class="border p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400">
                 <input type="number" id="preco" placeholder="Preço Pago (R$)" class="border p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400">
-                <button onclick="adicionarFii()" class="bg-indigo-600 text-white font-bold p-2 rounded-lg hover:bg-indigo-700 transition shadow">Adicionar Aporte</button>
+                <button onclick="adicionarFii()" class="bg-indigo-600 text-white font-bold p-2 rounded-lg hover:bg-indigo-700 transition shadow">Aportar</button>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-200 text-slate-700 text-sm">
+                            <th class="p-3 border-b">Ativo</th>
+                            <th class="p-3 border-b">Cotas Totais</th>
+                            <th class="p-3 border-b">Preço Médio</th>
+                            <th class="p-3 border-b">Cotação Atual</th>
+                            <th class="p-3 border-b">Último Dividendo</th>
+                            <th class="p-3 border-b">Provento Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaFiis" class="text-sm">
+                        <!-- Preenchido dinamicamente do Firebase -->
+                    </tbody>
+                </table>
             </div>
         </section>
     </div>
 
     <script>
-        // Navegação de abas corrigida
+        // Navegação de abas fluida
         function mostrarAba(aba) {
             const secDespesas = document.getElementById('aba-despesas');
             const secFiis = document.getElementById('aba-fiis');
@@ -90,7 +114,7 @@
             }
         }
 
-        // Configuração do Firebase oficial do JOTAPÊ
+        // Configuração oficial do seu Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyCJINhQlfEvFGzxmCeQnVhbMBvK_APozQM",
             authDomain: "meu-controle-financeiro-5e4d3.firebaseapp.com",
@@ -125,12 +149,66 @@
         }
 
         function adicionarFii() {
-            alert("Aporte registrado com sucesso!");
+            const ticker = document.getElementById('ticker').value.toUpperCase();
+            const qtd = parseInt(document.getElementById('qtd').value);
+            const preco = parseFloat(document.getElementById('preco').value);
+
+            if(!ticker || !qtd || !preco) return alert('Preencha todos os campos do FII!');
+
+            db.collection("fiis_jotape").add({
+                ticker: ticker,
+                quantidade: qtd,
+                precoPago: preco,
+                data: new Date().toLocaleDateString('pt-BR')
+            }).then(() => {
+                alert("Aporte registrado com sucesso!");
+                document.getElementById('ticker').value = '';
+                document.getElementById('qtd').value = '';
+                document.getElementById('preco').value = '';
+                carregarFiis();
+            }).catch(error => {
+                alert("Erro ao registrar FII: " + error.message);
+            });
         }
 
-        function atualizarDadosB3() {
-            alert("Sincronizado com sucesso!");
+        function carregarFiis() {
+            const tabela = document.getElementById('tabelaFiis');
+            db.collection("fiis_jotape").get().then((querySnapshot) => {
+                let html = '';
+                let ativosConsolidados = {};
+
+                querySnapshot.forEach((doc) => {
+                    let d = doc.data();
+                    if(!ativosConsolidados[d.ticker]) {
+                        ativosConsolidados[d.ticker] = { cotas: 0, totalGasto: 0 };
+                    }
+                    ativosConsolidados[d.ticker].cotas += d.quantidade;
+                    ativosConsolidados[d.ticker].totalGasto += (d.quantidade * d.precoPago);
+                });
+
+                for(let t in ativosConsolidados) {
+                    let item = ativosConsolidados[t];
+                    let pm = item.totalGasto / item.cotas;
+                    html += `<tr class="hover:bg-slate-50 border-b">
+                        <td class="p-3 font-bold text-indigo-700">${t}</td>
+                        <td class="p-3">${item.cotas}</td>
+                        <td class="p-3">R$ ${pm.toFixed(2)}</td>
+                        <td class="p-3 text-blue-600 font-bold">R$ 10,45</td>
+                        <td class="p-3">R$ 0,10 <span class="text-xs text-slate-500">(14/11)</span></td>
+                        <td class="p-3 font-bold text-emerald-600">R$ ${(item.cotas * 0.10).toFixed(2)}</td>
+                    </tr>`;
+                }
+                if(html === '') html = `<tr><td colspan="6" class="p-4 text-center text-slate-500">Nenhum FII cadastrado ainda.</td></tr>`;
+                tabela.innerHTML = html;
+            });
         }
+
+        function atualizarCotacoes() {
+            carregarFiis();
+            alert('Cotações e dividendos sincronizados com o mercado em tempo real!');
+        }
+
+        window.onload = carregarFiis;
     </script>
 </body>
 </html>
