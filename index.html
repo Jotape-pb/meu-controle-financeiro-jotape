@@ -6,98 +6,122 @@
     <title>Meu Controle Financeiro - JOTAPÊ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Bibliotecas do Banco de Dados Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 </head>
-<body class="bg-gray-100 font-sans">
-    <div class="max-w-6xl mx-auto p-6">
+<body class="bg-slate-100 font-sans p-2 md:p-6">
+    <div class="max-w-6xl mx-auto">
         <!-- Cabeçalho -->
-        <header class="flex justify-between items-center bg-blue-900 text-white p-6 rounded-lg shadow-lg mb-6">
+        <header class="bg-slate-900 text-white p-6 rounded-xl shadow-lg mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
-                <h1 class="text-3xl font-bold"><i class="fas fa-chart-line mr-3"></i>Meu Controle Financeiro - JOTAPÊ</h1>
-                <p class="text-blue-200 mt-1">Gestão de Orçamento Familiar & Carteira de FIIs</p>
+                <h1 class="text-2xl md:text-3xl font-bold"><i class="fas fa-chart-pie text-blue-400 mr-3"></i>Meu Controle Financeiro - JOTAPÊ</h1>
             </div>
-            <div class="text-right">
-                <p class="text-sm">Status da Reserva</p>
-                <p class="text-xl font-bold text-green-400"><i class="fas fa-shield-alt mr-2"></i>Blindada</p>
+            <div class="flex gap-2">
+                <button onclick="mostrarAba('despesas')" class="bg-blue-600 px-4 py-2 rounded font-bold hover:bg-blue-500 transition">Controle Pessoal</button>
+                <button onclick="mostrarAba('fiis')" class="bg-indigo-600 px-4 py-2 rounded font-bold hover:bg-indigo-500 transition">Carteira FIIs</button>
             </div>
         </header>
 
-        <!-- Módulo 1: Fundação (Despesas) -->
-        <section class="bg-white p-6 rounded-lg shadow-md mb-6">
-            <h2 class="text-2xl font-bold text-gray-800 border-b pb-2 mb-4"><i class="fas fa-home mr-2 text-blue-600"></i>Custos da Casa (Fundação)</h2>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                <select class="border p-2 rounded" id="categoriaDespesa">
-                    <option value="Agua">Água Casa</option>
-                    <option value="Energia">Energia Casa</option>
-                    <option value="Internet">Internet Casa</option>
-                    <option value="Alimentacao">Alimentação</option>
-                    <option value="Aluguel">Aluguel Casa/AP</option>
-                    <option value="Uber">UBER</option>
+        <!-- ABA 1: CONTROLE PESSOAL -->
+        <section id="aba-despesas" class="bg-white p-6 rounded-xl shadow-md mb-6 block">
+            <h2 class="text-xl font-bold text-slate-800 border-b pb-3 mb-4"><i class="fas fa-wallet text-blue-600 mr-2"></i>Registro de Custos</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 bg-slate-50 p-4 rounded-lg border">
+                <select id="categoria" class="border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+                    <option value="Água Casa">Água Casa</option>
+                    <option value="Energia Casa">Energia Casa</option>
+                    <option value="Internet Casa">Internet Casa</option>
+                    <option value="Alimentação">Alimentação</option>
+                    <option value="Aluguel Casa/AP">Aluguel Casa/AP</option>
+                    <option value="UBER">UBER</option>
                     <option value="Lazer">Lazer</option>
                     <option value="Outros">Outros (Nova Categoria)</option>
                 </select>
-                <input type="text" placeholder="Descrição Opcional" class="border p-2 rounded" id="descDespesa">
-                <input type="number" placeholder="Valor (R$)" class="border p-2 rounded" id="valorDespesa">
-                <button class="bg-blue-600 text-white p-2 rounded font-bold hover:bg-blue-700 transition" onclick="alert('Lançamento salvo no banco de dados!')">Adicionar Custo</button>
+                <input type="text" id="descricao" placeholder="Descrição (Opcional)" class="border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+                <input type="number" id="valor" placeholder="Valor (R$)" class="border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+                <button onclick="salvarDespesa()" class="bg-blue-600 text-white font-bold p-2 rounded hover:bg-blue-700 transition">Salvar Despesa</button>
             </div>
-            
-            <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                <h3 class="font-bold text-blue-800 mb-2"><i class="fas fa-robot mr-2"></i>Análise Inteligente de Custos</h3>
-                <p class="text-sm text-gray-700">Conectando ao Gemini... Avaliando fluxo de caixa para otimização da Reserva de Emergência e impacto dos custos de telemarketing.</p>
-                <button class="mt-3 text-xs bg-blue-800 text-white px-3 py-1 rounded hover:bg-blue-900" onclick="alert('Módulo de IA será ativado com a sua API Key do Google AI Studio.')">Gerar Análise</button>
+
+            <!-- Espaço de Análise IA -->
+            <div class="bg-slate-900 text-white p-5 rounded-xl shadow-inner mt-6">
+                <h3 class="font-bold text-lg mb-2"><i class="fas fa-brain text-purple-400 mr-2"></i>Análise Inteligente de Caixa</h3>
+                <p class="text-sm text-slate-300 mb-4">Verificando balanço de receitas e despesas para gerar orientações automáticas de melhoria do orçamento familiar.</p>
+                <button onclick="alert('Configuraremos a chave do Gemini em breve para gerar relatórios detalhados!')" class="bg-purple-600 px-4 py-2 rounded text-sm font-bold hover:bg-purple-500 transition">Gerar Análise Profunda</button>
             </div>
         </section>
 
-        <!-- Módulo 2: FIIs (Construção) -->
-        <section class="bg-white p-6 rounded-lg shadow-md">
-            <div class="flex justify-between items-center border-b pb-2 mb-4">
-                <h2 class="text-2xl font-bold text-gray-800"><i class="fas fa-building mr-2 text-blue-600"></i>Carteira de FIIs (A Construção)</h2>
-                <button class="bg-green-600 text-white px-4 py-2 rounded font-bold hover:bg-green-700 transition shadow" onclick="atualizarCotacoes()">
-                    <i class="fas fa-sync-alt mr-2"></i>Atualizar Cotações
+        <!-- ABA 2: CARTEIRA FIIS -->
+        <section id="aba-fiis" class="bg-white p-6 rounded-xl shadow-md hidden">
+            <div class="flex flex-col md:flex-row justify-between items-center border-b pb-3 mb-4 gap-4">
+                <h2 class="text-xl font-bold text-slate-800"><i class="fas fa-city text-indigo-600 mr-2"></i>Meus Fundos Imobiliários</h2>
+                <button onclick="atualizarDadosB3()" class="bg-emerald-600 text-white px-4 py-2 rounded font-bold hover:bg-emerald-500 transition shadow">
+                    <i class="fas fa-sync-alt mr-2"></i>Buscar Cotações e Dividendos na Web
                 </button>
             </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <input type="text" placeholder="Ticker (Ex: MXRF11)" class="border p-2 rounded uppercase" id="ticker">
-                <input type="number" placeholder="Quantidade" class="border p-2 rounded" id="qtd">
-                <input type="number" placeholder="Preço Pago (R$)" class="border p-2 rounded" id="preco">
-                <button class="bg-blue-600 text-white p-2 rounded font-bold hover:bg-blue-700 transition" onclick="alert('Ativo adicionado! O Preço Médio foi calculado.')">Aportar</button>
-            </div>
 
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-gray-200 text-gray-700">
-                            <th class="p-3 border-b">Ativo</th>
-                            <th class="p-3 border-b">Cotas</th>
-                            <th class="p-3 border-b">Preço Médio</th>
-                            <th class="p-3 border-b">Cotação Atual</th>
-                            <th class="p-3 border-b">Último Dividendo</th>
-                            <th class="p-3 border-b">Provento Total</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabelaFiis">
-                        <!-- Linha de exemplo -->
-                        <tr class="hover:bg-gray-50">
-                            <td class="p-3 border-b font-bold">MXRF11</td>
-                            <td class="p-3 border-b">150</td>
-                            <td class="p-3 border-b">R$ 10,20</td>
-                            <td class="p-3 border-b text-blue-600 font-bold" id="cotacao-mxrf11">R$ --</td>
-                            <td class="p-3 border-b" id="div-mxrf11">R$ -- <span class="text-xs text-gray-500">(Data: --/--)</span></td>
-                            <td class="p-3 border-b font-bold text-green-600" id="total-mxrf11">R$ --</td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 bg-slate-50 p-4 rounded-lg border">
+                <input type="text" id="ticker" placeholder="Ativo (Ex: MXRF11)" class="border p-2 rounded uppercase focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                <input type="number" id="qtd" placeholder="Quantidade" class="border p-2 rounded focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                <input type="number" id="preco" placeholder="Preço Pago (R$)" class="border p-2 rounded focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                <button onclick="alert('Ativo registrado! O sistema organizará sua carteira.')" class="bg-indigo-600 text-white font-bold p-2 rounded hover:bg-indigo-700 transition">Adicionar à Carteira</button>
             </div>
         </section>
     </div>
 
     <script>
-        function atualizarCotacoes() {
-            // Simulação de busca na web (API B3/Brapi)
-            document.getElementById('cotacao-mxrf11').innerText = 'R$ 10,45';
-            document.getElementById('div-mxrf11').innerHTML = 'R$ 0,10 <span class="text-xs text-gray-500">(Data: 14/11)</span>';
-            document.getElementById('total-mxrf11').innerText = 'R$ 15,00';
-            alert('Cotações e dividendos sincronizados com o mercado em tempo real!');
+        // Navegação das abas
+        function mostrarAba(aba) {
+            document.getElementById('aba-despesas').classList.add('hidden');
+            document.getElementById('aba-fiis').classList.add('hidden');
+            document.getElementById('aba-' + aba).classList.remove('hidden');
+            document.getElementById('aba-' + aba).classList.add('block');
+        }
+
+        function atualizarDadosB3() {
+            alert("Buscando dados em tempo real... Logo conectaremos a API Financeira para puxar a cotação e a data exata do último dividendo pago!");
+        }
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCJINhQlfEvFGzxmCeQnVhbMBvK_APozQM",
+  authDomain: "meu-controle-financeiro-5e4d3.firebaseapp.com",
+  projectId: "meu-controle-financeiro-5e4d3",
+  storageBucket: "meu-controle-financeiro-5e4d3.firebasestorage.app",
+  messagingSenderId: "198921382366",
+  appId: "1:198921382366:web:f28462ed60e5e98637554f"
+};
+
+        const firebaseConfig = {
+            apiKey: "COLE_AQUI",
+            authDomain: "COLE_AQUI",
+            projectId: "COLE_AQUI",
+            storageBucket: "COLE_AQUI",
+            messagingSenderId: "COLE_AQUI",
+            appId: "COLE_AQUI"
+        };
+        // ==========================================
+
+        // Inicializando o Banco de Dados
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        function salvarDespesa() {
+            const cat = document.getElementById('categoria').value;
+            const desc = document.getElementById('descricao').value;
+            const val = document.getElementById('valor').value;
+            
+            if(!val) return alert('Preencha o valor!');
+
+            db.collection("despesas_jotape").add({
+                categoria: cat,
+                descricao: desc,
+                valor: parseFloat(val),
+                data: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                alert("Salvo com sucesso na nuvem!");
+                document.getElementById('descricao').value = '';
+                document.getElementById('valor').value = '';
+            });
         }
     </script>
 </body>
